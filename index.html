@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flashcard App</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #card { 
+      border: 2px solid #333; 
+      border-radius: 12px; 
+      padding: 30px; 
+      max-width: 500px; 
+      margin: 0 auto 20px; 
+      box-shadow: 2px 2px 10px #aaa; 
+      cursor: pointer;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Flashcard App</h1>
+  <div id="card">Loading...</div>
+  <button onclick="loadRandomCard()">🔀 New Card</button>
+
+  <script>
+    const airtableToken = "pat90EKSzm3sX5HWt.b830a5a39a9a2a5ec493f94d78943693b6ffac9656b42f39e103f6506c5bfbac";
+    const baseId = "appYcu0BuTGODBmx1";
+    const tableName = "Table%201"; // URL-encoded space
+
+    let cards = [];
+    let showingFront = true;
+    let currentCard = {};
+
+    async function fetchCards() {
+      const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${airtableToken}`
+        }
+      });
+      const data = await res.json();
+      cards = data.records.map(record => ({
+        front: record.fields.Front,
+        back: record.fields.Back
+      }));
+      loadRandomCard();
+    }
+
+    function loadRandomCard() {
+      if (cards.length === 0) {
+        document.getElementById("card").innerText = "No cards found.";
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * cards.length);
+      currentCard = cards[randomIndex];
+      showingFront = true;
+      renderCard();
+    }
+
+    function renderCard() {
+      document.getElementById("card").innerText = showingFront ? currentCard.front : currentCard.back;
+    }
+
+    document.getElementById("card").addEventListener("click", () => {
+      showingFront = !showingFront;
+      renderCard();
+    });
+
+    fetchCards();
+  </script>
+</body>
+</html>
